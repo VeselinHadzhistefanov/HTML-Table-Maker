@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Space</title>
+    <style>
+        .prompt-space {
+            width: 400px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-area {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+        }
+
+        .message-row {
+            display: flex;
+        }
+
+        .message-row.machine {
+            justify-content: flex-start;
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .bubble-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .bubble-text {
+            position: absolute;
+            font-size: 16px;
+            line-height: 24px;
+            height: 24px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .bubble-text-content {
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .bubble-ellipsis {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 16px;
+            line-height: 24px;
+            background: white;
+            padding-left: 2px;
+        }
+
+        .input-row {
+            padding: 10px;
+        }
+
+        .input-textbox {
+            position: absolute;
+            font-size: 16px;
+            border: none;
+            background: none;
+            outline: none;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="prompt-space" id="prompt-space">
+        <div class="message-area" id="message-area"></div>
+        <div class="input-row" id="input-row"></div>
+    </div>
+    <script src="prompt_space.js"></script>
+</body>
+</html>
