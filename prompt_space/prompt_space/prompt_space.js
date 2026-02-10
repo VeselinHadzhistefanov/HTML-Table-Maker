@@ -11,14 +11,14 @@
         messageArea = document.getElementById("message-area");
         inputRow = document.getElementById("input-row");
 
-        var availableWidth = space.clientWidth - 20;
+        var availableWidth = space.clientWidth - BOX_HEIGHT;
         maxBubbleWidth = availableWidth - 2 * BOX_HEIGHT;
 
         createInputBubble(availableWidth);
     }
 
     function addMessage(text, sender) {
-        var variant = sender === "machine" ? 1 : 2;
+        var variant = sender === "machine" ? 2 : 1;
 
         var textWidth = measureTextWidth(text);
         var bubbleWidth = Math.min(Math.ceil(textWidth), maxBubbleWidth);
@@ -156,15 +156,15 @@
     }
 
     function createInputBubble(availableWidth) {
-        var inputWidth = availableWidth - 2 * BOX_HEIGHT;
-        var totalWidth = inputWidth + 2 * BOX_HEIGHT;
+        var inputWidth = availableWidth - BOX_HEIGHT;
+        var totalWidth = availableWidth;
 
         var container = document.createElement("div");
         container.className = "bubble-container";
         container.style.width = totalWidth + "px";
         container.style.height = BOX_HEIGHT + "px";
 
-        container.appendChild(createBubbleSVG(inputWidth, 2));
+        container.appendChild(createBubbleSVG(inputWidth, 1));
 
         var input = document.createElement("input");
         input.type = "text";
