@@ -164,7 +164,8 @@
         container.style.width = totalWidth + "px";
         container.style.height = BOX_HEIGHT + "px";
 
-        container.appendChild(createBubbleSVG(inputWidth, 1));
+        var bubbleSVG = createBubbleSVG(inputWidth, 1)
+        container.appendChild(bubbleSVG);
 
         var input = document.createElement("input");
         input.type = "text";

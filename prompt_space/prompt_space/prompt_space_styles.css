@@ -8,7 +8,6 @@
     height: 500px;
     display: flex;
     flex-direction: column;
-    border: 1px solid black;
 }
 
 .message-area {
@@ -67,6 +66,7 @@
 
 .input-row {
     padding: 0;
+    height : 24px;
 }
 
 .input-textbox {
