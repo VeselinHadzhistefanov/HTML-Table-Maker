@@ -33,7 +33,7 @@
         container.style.width = totalWidth + "px";
         container.style.height = BOX_HEIGHT + "px";
 
-        container.appendChild(createBubbleSVG(bubbleWidth, variant));
+        container.appendChild(createBubbleSVG(bubbleWidth, BOX_HEIGHT, variant));
 
         var textDiv = document.createElement("div");
         textDiv.className = "bubble-text";
@@ -61,31 +61,57 @@
         messageArea.scrollTop = messageArea.scrollHeight;
     }
 
-    function createBubbleSVG(width, variant) {
-        var H = BOX_HEIGHT;
-        var W = width;
+    Object.prototype.translate = function (x, y) {
+        var point = [...this]
+        point[0] += x;
+        point[1] += y;
+
+        return point;
+    }
+
+    function createBubbleSVG(width, height, variant) {
+        var BOX = BOX_HEIGHT
+        var HEIGHT = Math.ceil(height / BOX_HEIGHT) * BOX_HEIGHT * 2;
+        var WIDTH = width;
         var ns = "http://www.w3.org/2000/svg";
 
         var svg = document.createElementNS(ns, "svg");
-        svg.setAttribute("width", W + 2 * H);
-        svg.setAttribute("height", H);
+        svg.setAttribute("width", WIDTH + 2 * HEIGHT);
+        svg.setAttribute("height", HEIGHT);
         svg.setAttribute("overflow", "visible");
         svg.style.display = "block";
 
+        var topLeft = [0, 0]
+        var topRight = [BOX, 0]
+        var bottomLeft = [0, BOX]
+        var bottomRight = [BOX, BOX]
+
         var lines = [
-            [H, 0, H + W, 0, true],
-            [H, H, H + W, H, true],
-            [0, 0, H, 0, variant === 1],
-            [H + W, 0, 2 * H + W, 0, variant === 2],
-            [0, H, H, H, variant === 2],
-            [H + W, H, 2 * H + W, H, variant === 1],
-            [0, 0, H, H, variant === 1],
-            [H, 0, 0, H, variant === 2],
-            [H + W, 0, 2 * H + W, H, variant === 1],
-            [H + W, H, 2 * H + W, 0, variant === 2]
-        ];
+            [...topRight, ...topRight.translate(WIDTH, 0), true],
+            [...bottomRight.translate(0, BOX), ...bottomRight.translate(WIDTH, BOX), true],
+            [...topLeft, ...topLeft.translate(0, HEIGHT - BOX), variant == 1],
+            [...bottomLeft, ...bottomLeft.translate(0, HEIGHT - BOX), variant == 2],
+            [...topLeft, ...topRight, variant === 1],
+            [...bottomLeft, ...bottomRight, variant === 2],
+            [...topLeft.translate(WIDTH, 0), ...topRight.translate(WIDTH, 0), variant === 2],
+            [...bottomLeft.translate(WIDTH + BOX, 0), ...bottomRight.translate(WIDTH + BOX, 0), variant === 1],
+            [...topLeft, ...bottomRight, variant === 1],
+            [...bottomRight, ...topRight, variant === 2],
+            [...topLeft.translate(WIDTH + BOX, 0), ...bottomRight.translate(WIDTH + BOX, 0), variant === 1],
+            [...bottomRight.translate(WIDTH + BOX, 0), ...topRight.translate(WIDTH + BOX, 0), variant === 2],
+        ]
+
+        var points = [[BOX, BOX]]
+        points.addPoint(BOX + WIDTH, 0)
+        points.addPoint(-BOX, -BOX)
+        points.addPoint(-WIDTH - BOX, 0)
+        points.addPoint(BOX, BOX)
+
+        var shape = createShape(points)
+        lines = shape
 
         for (var i = 0; i < lines.length; i++) {
+            console.log(lines[i])
             var d = lines[i];
             var line = document.createElementNS(ns, "line");
             line.setAttribute("x1", d[0]);
@@ -94,11 +120,32 @@
             line.setAttribute("y2", d[3]);
             line.setAttribute("stroke", "black");
             line.setAttribute("stroke-width", BORDER_WEIGHT);
-            if (!d[4]) line.style.display = "none";
+            //if (!d[4]) line.style.display = "none";
             svg.appendChild(line);
         }
 
         return svg;
+    }
+
+    function createShape(points) {
+        var lines = []
+        var p1 = points[0]
+
+        for (var i = 1; i < points.length; i++) {
+            var p2 = points[i]
+            var line = [...p1, ...p2]
+            lines.push(line)
+            p1 = p2
+        }
+
+        return lines
+    }
+
+    Object.prototype.addPoint = function (x, y) {
+        var point = [...this[this.length - 1]]
+        point[0] += x
+        point[1] += y
+        this.push(point)
     }
 
     function measureTextWidth(text) {
@@ -164,7 +211,7 @@
         container.style.width = totalWidth + "px";
         container.style.height = BOX_HEIGHT + "px";
 
-        var bubbleSVG = createBubbleSVG(inputWidth, 1)
+        var bubbleSVG = createBubbleSVG(inputWidth, BOX_HEIGHT, 1)
         container.appendChild(bubbleSVG);
 
         var input = document.createElement("input");
