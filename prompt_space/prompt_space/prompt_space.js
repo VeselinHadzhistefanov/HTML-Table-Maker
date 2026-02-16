@@ -21,10 +21,10 @@
         var variant = sender === "machine" ? 2 : 1;
 
         var textWidth = measureTextWidth(text);
-        var isOverflowing = textWidth > maxBubbleWidth;
+        var overflow = Math.ceil(textWidth / maxBubbleWidth);
 
         var bubbleWidth = Math.min(Math.ceil(textWidth), maxBubbleWidth);
-        var bubbleHeight = isOverflowing ? BOX_HEIGHT * 2 : BOX_HEIGHT
+        var bubbleHeight = overflow * BOX_HEIGHT;
 
         var totalWidth = bubbleWidth + 2 * BOX_HEIGHT;
 
@@ -48,9 +48,13 @@
         var textSpan = document.createElement("span");
         textSpan.className = "bubble-text-content";
         textSpan.textContent = text;
+        textSpan.style.width = bubbleWidth + "px";
+        textSpan.style.height = bubbleHeight + "px";
+        textSpan.style.textWrap = "wrap"
+        textSpan.style.overflowWrap = "anywhere"
         textDiv.appendChild(textSpan);
 
-        if (isOverflowing) {
+        if (overflow > 1) {
             var ellipsis = document.createElement("span");
             ellipsis.className = "bubble-ellipsis";
             ellipsis.textContent = "...";
@@ -162,7 +166,7 @@
         translate(x, y) {
             let translated = []
             for (let l of this.lines){
-                let p1 = [l[0], l[1] ]
+                let p1 = [l[0], l[1]]
                 let p2 = [l[2], l[3]]
                 let line = [p1[0] + x , p1[1] + y, p2[0] + x, p2[1] + y]
                 translated.push(line)
