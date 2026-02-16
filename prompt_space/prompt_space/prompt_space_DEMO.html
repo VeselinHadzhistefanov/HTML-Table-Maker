@@ -177,19 +177,19 @@
         svg.setAttribute("overflow", "visible");
         svg.style.display = "block";
 
-        // Draw method
+        // Draw top cap
         let topCap = new Shape()
         if (direction == 1) {
             topCap.beginShape(0, 0)
-            topCap.offset(-width -BOX_HEIGHT, 0)
-            topCap.offset(-BOX_HEIGHT, -BOX_HEIGHT)
+            topCap.offset(width + BOX_HEIGHT, 0)
+            topCap.offset(BOX_HEIGHT, BOX_HEIGHT)
         } else {
             topCap.beginShape(BOX_HEIGHT, 0)
             topCap.offset(width + BOX_HEIGHT, 0)
             topCap.offset(BOX_HEIGHT, BOX_HEIGHT)
         }
 
-        // Draw method
+        // Draw bottom cap
         let bottomCap = new Shape()
         if (direction == 1) {
             bottomCap.beginShape(0, 0)
@@ -201,44 +201,29 @@
             bottomCap.offset(-BOX_HEIGHT, -BOX_HEIGHT)
         }
 
+        bottomCap.translate(0, height - BOX_HEIGHT)
+
         // Draw borders
         let border = new Shape()
-        border.beginShape(BOX_HEIGHT, BOX_HEIGHT)
-        border.offset(0, height)
-        border.offset(width + BOX_HEIGHT, 0, false)
-        border.offset(0, -height)
+        if (direction == 1) {
+            border.beginShape(0, 0)
+            border.offset(0, height - BOX_HEIGHT)
+            border.offset(width + 2 * BOX_HEIGHT, 0, false)
+            border.offset(0, - height)
+        } else {
+            border.beginShape(0, BOX_HEIGHT)
+            border.offset(0, height - BOX_HEIGHT)
+            border.offset(width + 2 * BOX_HEIGHT, - BOX_HEIGHT, false)
+            border.offset(0, - height)
+        }
 
         let shape = []
-        shape.push(topCap.get())
-        shape.push(bottomCap.get())
-        shape.push(border.get())
+        shape.push(...topCap.get())
+        shape.push(...bottomCap.get())
+        shape.push(...border.get())
 
-        /*
-        // Draw method - shape
-        let shape = new Shape()
-
-        if (direction == 1) {
-            shape.beginShape(0, 0)
-            shape.offset(width + BOX_HEIGHT, 0)
-            shape.offset(BOX_HEIGHT, BOX_HEIGHT)
-            shape.offset(0, height - BOX_HEIGHT, true)
-            shape.offset(-width -BOX_HEIGHT, 0)
-            shape.offset(-BOX_HEIGHT, -BOX_HEIGHT)
-            shape.offset(0, -(height - BOX_HEIGHT), true)
-        } else {
-            shape.beginShape(BOX_HEIGHT, 0)
-            shape.offset(0, height - BOX_HEIGHT, true)
-            shape.offset(width + BOX_HEIGHT, 0)
-            shape.offset(-BOX_HEIGHT, BOX_HEIGHT)
-            shape.offset(-width -BOX_HEIGHT, 0)
-            shape.offset(BOX_HEIGHT, -BOX_HEIGHT)
-        }
-        */
-
-        var lines = shape.get()
-
-        for (var i = 0; i < lines.length; i++) {
-            var d = lines[i];
+        for (var i = 0; i < shape.length; i++) {
+            var d = shape[i];
             var line = document.createElementNS(ns, "line");
             line.setAttribute("x1", d[0]);
             line.setAttribute("y1", d[1]);
@@ -249,8 +234,7 @@
             //if (!d[4]) line.style.display = "none";
             svg.appendChild(line);
         }
-        
-
+    
         return svg;
     }
 
@@ -278,6 +262,18 @@
             if(draw){
                 this.addLine(this.points.length - 1, this.points.length - 2)
             }
+        }
+
+        translate(x, y) {
+            let translated = []
+            for (let l of this.lines){
+                let p1 = [l[0], l[1] ]
+                let p2 = [l[2], l[3]]
+                let line = [p1[0] + x , p1[1] + y, p2[0] + x, p2[1] + y]
+                translated.push(line)
+            }
+
+            this.lines = translated
         }
 
         get() {
