@@ -15,6 +15,23 @@
         maxBubbleWidth = availableWidth - 2 * BOX_HEIGHT;
 
         createInputBubble(availableWidth);
+        configure();
+    }
+
+    function configure(){
+        let keys = Reflect.ownKeys(this)
+        for (let k of keys){
+            let content = eval(k)
+            if(content != null && content != undefined){
+                if(typeof content == "object" || typeof content == "function"){
+                    let compilerData = content.toString()
+
+                    if(compilerData.includes("@CompilerConfigured")){
+                        console.log("Annotations " + compilerData)
+                    }
+                }
+            }
+        }
     }
 
     function addMessage(text, sender) {
@@ -69,6 +86,7 @@
     }
 
     function createBubbleSVG(width, height, direction) {
+        "@CompilerConfigured"
         var ns = "http://www.w3.org/2000/svg";
         var svg = document.createElementNS(ns, "svg");
         svg.setAttribute("width", width + 2 * height);
@@ -78,25 +96,19 @@
 
         // Borders - top & bottom
         let border = new Shape()
-        if (direction == 1) {
-            border.beginShape(0, 0)
-            border.offset(0, height - BOX_HEIGHT)
-            border.offset(width + 2 * BOX_HEIGHT, 0, false)
-            border.offset(0, - height)
-        } else {
-            border.beginShape(0, BOX_HEIGHT)
-            border.offset(0, height - BOX_HEIGHT)
-            border.offset(width + 2 * BOX_HEIGHT, - BOX_HEIGHT, false)
-            border.offset(0, - height)
-        }
+        border.beginShape(BOX_HEIGHT, 0)
+        border.offset(width , 0)
+        border.offset(0, height, false)
+        border.offset(-width , 0)
 
         // Left cap
         let leftCap = new Shape()
         if (direction == 1) {
-            leftCap.beginShape(0, 0)
+            leftCap.beginShape(BOX_HEIGHT, 0)
+            leftCap.offset(-BOX_HEIGHT, 0)
             leftCap.offset(0, height - BOX_HEIGHT)
             leftCap.offset(BOX_HEIGHT, BOX_HEIGHT)
-            leftCap.offset(BOX_HEIGHT, 0)
+            
         } else {
             leftCap.beginShape(BOX_HEIGHT, 0)
             leftCap.offset(-BOX_HEIGHT, BOX_HEIGHT)
@@ -106,16 +118,16 @@
 
         // Right cap
         let rightCap = new Shape()
-        if (direction == 2) {
+        if (direction == 1) {
             rightCap.beginShape(width + BOX_HEIGHT, 0)
-            rightCap.offset(0, height - BOX_HEIGHT)
             rightCap.offset(BOX_HEIGHT, BOX_HEIGHT)
-            rightCap.offset(BOX_HEIGHT, 0)
-        } else {
-            rightCap.beginShape(width + 2 * BOX_HEIGHT, 0)
-            rightCap.offset(-BOX_HEIGHT, BOX_HEIGHT)
             rightCap.offset(0, height - BOX_HEIGHT)
-            rightCap.offset(BOX_HEIGHT, 0)        
+            rightCap.offset(-BOX_HEIGHT, 0)
+        } else {
+            rightCap.beginShape(width + BOX_HEIGHT, 0)
+            rightCap.offset(BOX_HEIGHT, 0)    
+            rightCap.offset(-BOX_HEIGHT, BOX_HEIGHT)
+            rightCap.offset(0, height - BOX_HEIGHT)    
         }
 
         let shape = []
@@ -137,6 +149,11 @@
         }
 
         return svg;
+    }
+
+    function annotationTest(){
+        "@CompilerConfigured"
+        console.log("Annotation function run")
     }
 
     class Shape {
