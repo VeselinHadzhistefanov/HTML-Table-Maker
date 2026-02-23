@@ -2,7 +2,6 @@ import sys
 import os
 import re
 
-
 def main():
     if len(sys.argv) < 2:
         print("Usage: python combine_demo.py <file1> <file2> ...")
@@ -52,7 +51,6 @@ def main():
         f.write(html_content)
 
     print("Created: " + output_file)
-
 
 if __name__ == "__main__":
     main()

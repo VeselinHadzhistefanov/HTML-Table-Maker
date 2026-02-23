@@ -15,21 +15,18 @@
         maxBubbleWidth = availableWidth - 2 * BOX_HEIGHT;
 
         createInputBubble(availableWidth);
-        configure();
+        //configure()
     }
 
     function configure(){
-        let keys = Reflect.ownKeys(this)
+        var keys = Reflect.ownKeys(this)
         for (let k of keys){
-            let content = eval(k)
-            if(content != null && content != undefined){
-                if(typeof content == "object" || typeof content == "function"){
-                    let compilerData = content.toString()
+            let name = k.toString()
+            let contents = eval(k.toString())
 
-                    if(compilerData.includes("@CompilerConfigured")){
-                        console.log("Annotations " + compilerData)
-                    }
-                }
+            if(typeof contents === "object" || typeof contents === "function"){
+                console.log(typeof contents)
+                console.log(contents )
             }
         }
     }
@@ -85,7 +82,7 @@
         messageArea.scrollTop = messageArea.scrollHeight;
     }
 
-    function createBubbleSVG(width, height, direction) {
+    var createBubbleSVG = function(width, height, direction) {
         "@CompilerConfigured"
         var ns = "http://www.w3.org/2000/svg";
         var svg = document.createElementNS(ns, "svg");
@@ -94,49 +91,14 @@
         svg.setAttribute("overflow", "visible");
         svg.style.display = "block";
 
-        // Borders - top & bottom
-        let border = new Shape()
-        border.beginShape(BOX_HEIGHT, 0)
-        border.offset(width , 0)
-        border.offset(0, height, false)
-        border.offset(-width , 0)
+        let shape = new Shape(width, height)
+        //shape.build(1)
+        shape.build("BubbleBoxLeft")
+        let lines = shape.get()
 
-        // Left cap
-        let leftCap = new Shape()
-        if (direction == 1) {
-            leftCap.beginShape(BOX_HEIGHT, 0)
-            leftCap.offset(-BOX_HEIGHT, 0)
-            leftCap.offset(0, height - BOX_HEIGHT)
-            leftCap.offset(BOX_HEIGHT, BOX_HEIGHT)
-            
-        } else {
-            leftCap.beginShape(BOX_HEIGHT, 0)
-            leftCap.offset(-BOX_HEIGHT, BOX_HEIGHT)
-            leftCap.offset(0, height - BOX_HEIGHT)
-            leftCap.offset(BOX_HEIGHT, 0)        
-        }
+        for(var i = 0; i < lines.length; i++) {
+            var d = lines[i];
 
-        // Right cap
-        let rightCap = new Shape()
-        if (direction == 1) {
-            rightCap.beginShape(width + BOX_HEIGHT, 0)
-            rightCap.offset(BOX_HEIGHT, BOX_HEIGHT)
-            rightCap.offset(0, height - BOX_HEIGHT)
-            rightCap.offset(-BOX_HEIGHT, 0)
-        } else {
-            rightCap.beginShape(width + BOX_HEIGHT, 0)
-            rightCap.offset(BOX_HEIGHT, 0)    
-            rightCap.offset(-BOX_HEIGHT, BOX_HEIGHT)
-            rightCap.offset(0, height - BOX_HEIGHT)    
-        }
-
-        let shape = []
-        shape.push(...leftCap.get())
-        shape.push(...rightCap.get())
-        shape.push(...border.get())
-
-        for (var i = 0; i < shape.length; i++) {
-            var d = shape[i];
             var line = document.createElementNS(ns, "line");
             line.setAttribute("x1", d[0]);
             line.setAttribute("y1", d[1]);
@@ -144,6 +106,7 @@
             line.setAttribute("y2", d[3]);
             line.setAttribute("stroke", "black");
             line.setAttribute("stroke-width", BORDER_WEIGHT);
+
             //if (!d[4]) line.style.display = "none";
             svg.appendChild(line);
         }
@@ -151,15 +114,47 @@
         return svg;
     }
 
-    function annotationTest(){
-        "@CompilerConfigured"
-        console.log("Annotation function run")
-    }
-
     class Shape {
-        constructor() {
+        constructor(width, height) {
+            this.Type = {
+                BubbleBoxLeft: { name: "BBLeft", points: [['0', '0'], ['w+b', '0'], ['b', 'b'], ['-w-b', '0'], ['-b', '-b']] },
+                BubbleBoxRight: { name: "BBRight", points: [['b', '0'], ['w+b', '0'], ['-b', 'b'], ['-w-b', '0'], ['b', '-b']] },
+                ExtendedBubbleBoxLeft: { name: "EBBLeft" },
+                ExtendedBubbleBoxRight: { name: "EBBRight" }
+            };
+            this.width = width;
+            this.height = height;
             this.points = []
             this.lines = []
+        }
+
+        build(variation) {
+            let codePoints = this.Type[variation].points
+            const vars = { w: this.width, h: this.height, b: BOX_HEIGHT };
+
+            const evalExpr = (expr) => {
+                return expr.split(/(?=[+-])/).reduce((sum, token) => {
+                    token = token.replace(/^\+/, '');
+                    let sign = 1;
+                    if (token.startsWith('-')) {
+                        sign = -1;
+                        token = token.slice(1);
+                    }
+                    const val = (token in vars) ? vars[token] : Number(token);
+                    return sum + sign * val;
+                }, 0);
+            };
+
+            let pointSequence = codePoints.map(point => point.map(evalExpr));
+            console.log(pointSequence)
+            this.beginShape(pointSequence[0][0], pointSequence[0][1])
+            console.log(this.points)
+
+            for (let i = 1; i < pointSequence.length; i++){
+                this.offset(...pointSequence[i])            
+            }
+
+            console.log(this.points)
         }
 
         beginShape(x, y) {
@@ -201,7 +196,6 @@
             return this.lines
         }
     }
-
 
     function measureTextWidth(text) {
         var el = document.createElement("span");
