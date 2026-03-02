@@ -18,27 +18,27 @@
         //configure()
     }
 
-    function configure(){
+    function configure() {
         var keys = Reflect.ownKeys(this)
-        for (let k of keys){
+        for (let k of keys) {
             let name = k.toString()
             let contents = eval(k.toString())
 
-            if(typeof contents === "object" || typeof contents === "function"){
+            if (typeof contents === "object" || typeof contents === "function") {
                 console.log(typeof contents)
-                console.log(contents )
+                console.log(contents)
             }
         }
     }
 
     function addMessage(text, sender) {
-        var variant = sender === "machine" ? 2 : 1;
+        var direction = sender === "machine" ? 2 : 1;
 
-        var textWidth = measureTextWidth(text);
-        var overflow = Math.ceil(textWidth / maxBubbleWidth);
+        var width = measureTextWidth(text);
+        var linesSpread = Math.ceil(width / maxBubbleWidth);
 
-        var bubbleWidth = Math.min(Math.ceil(textWidth), maxBubbleWidth);
-        var bubbleHeight = overflow * BOX_HEIGHT;
+        var bubbleWidth = Math.min(Math.ceil(width), maxBubbleWidth);
+        var bubbleHeight = linesSpread * BOX_HEIGHT;
 
         var totalWidth = bubbleWidth + 2 * BOX_HEIGHT;
 
@@ -50,7 +50,14 @@
         container.style.width = totalWidth + "px";
         container.style.height = bubbleHeight + "px";
 
-        container.appendChild(createBubbleSVG(bubbleWidth, bubbleHeight, variant));
+        let style = {
+            width: bubbleWidth,
+            height: bubbleHeight,
+            direction: sender === "machine" ? "l" : "r",
+            extended: linesSpread === 1
+        }
+
+        container.appendChild(createBubbleSVG(style));
 
         var textDiv = document.createElement("div");
         textDiv.className = "bubble-text";
@@ -68,13 +75,13 @@
         textSpan.style.overflowWrap = "anywhere"
         textDiv.appendChild(textSpan);
 
-        if (overflow > 1) {
-            var ellipsis = document.createElement("span");
-            ellipsis.className = "bubble-ellipsis";
-            ellipsis.textContent = "...";
-            textDiv.appendChild(ellipsis);
-            setupHoverScroll(textDiv, textSpan, ellipsis, bubbleWidth);
-        }
+        // if (numLinesSpread > 1) {
+        //     var ellipsis = document.createElement("span");
+        //     ellipsis.className = "bubble-ellipsis";
+        //     ellipsis.textContent = "...";
+        //     textDiv.appendChild(ellipsis);
+        //     setupHoverScroll(textDiv, textSpan, ellipsis, bubbleWidth);
+        // }
 
         container.appendChild(textDiv);
         row.appendChild(container);
@@ -82,7 +89,7 @@
         messageArea.scrollTop = messageArea.scrollHeight;
     }
 
-    var createBubbleSVG = function(width, height, direction) {
+    var createBubbleSVG = function (width, height, variant, bubbleStyle) {
         "@CompilerConfigured"
         var ns = "http://www.w3.org/2000/svg";
         var svg = document.createElementNS(ns, "svg");
@@ -92,11 +99,10 @@
         svg.style.display = "block";
 
         let shape = new Shape(width, height)
-        //shape.build(1)
-        shape.build("BubbleBoxLeft")
+       
         let lines = shape.get()
 
-        for(var i = 0; i < lines.length; i++) {
+        for (var i = 0; i < lines.length; i++) {
             var d = lines[i];
 
             var line = document.createElementNS(ns, "line");
@@ -115,12 +121,14 @@
     }
 
     class Shape {
-        constructor(width, height) {
+        constructor(style) {
+            this.width = style.width
+            this.height = style.height
             this.Type = {
                 BubbleBoxLeft: { name: "BBLeft", points: [['0', '0'], ['w+b', '0'], ['b', 'b'], ['-w-b', '0'], ['-b', '-b']] },
                 BubbleBoxRight: { name: "BBRight", points: [['b', '0'], ['w+b', '0'], ['-b', 'b'], ['-w-b', '0'], ['b', '-b']] },
-                ExtendedBubbleBoxLeft: { name: "EBBLeft" },
-                ExtendedBubbleBoxRight: { name: "EBBRight" }
+                ExtendedBubbleBoxLeft: { name: "EBBLeft", points: [['0', '0'], ['w+b', '0'], ['h', '0'], ['b', 'b'], ['-w-b', '0'], ['-b', '-b'], ['-h', '0']] },
+                ExtendedBubbleBoxRight: { name: "EBBRight", points: [['b', '0'], ['w+b', '0'], ['h', '0'], ['-b', 'b'], ['-w-b', '0'], ['h', '0'], ['b', '-b']] }
             };
             this.width = width;
             this.height = height;
@@ -128,8 +136,9 @@
             this.lines = []
         }
 
-        build(variation) {
-            let codePoints = this.Type[variation].points
+        build(variant) {
+
+            let codePoints = this.Type[variant].points
             const vars = { w: this.width, h: this.height, b: BOX_HEIGHT };
 
             const evalExpr = (expr) => {
@@ -150,8 +159,8 @@
             this.beginShape(pointSequence[0][0], pointSequence[0][1])
             console.log(this.points)
 
-            for (let i = 1; i < pointSequence.length; i++){
-                this.offset(...pointSequence[i])            
+            for (let i = 1; i < pointSequence.length; i++) {
+                this.offset(...pointSequence[i])
             }
 
             console.log(this.points)
